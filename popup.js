@@ -5,6 +5,7 @@ const infoDiv = document.getElementById('info');
 const copyButton = document.getElementById('copyButton');
 const injectButton = document.getElementById('injectButton');
 const catButton = document.getElementById('catButton');
+
 let combinedInfo = "";
 let incidentOptions = [];
 let originalData = [];
@@ -13,7 +14,11 @@ fetch('resolution.json')
   .then(response => response.json())
   .then(data => {
     originalData = data;
-    incidentOptions = data.map(item => item["Incident Reported (In Remedy)"]);
+    incidentOptions = data.map(item => {
+      return item["Incident Reported (In Remedy)"].includes("UNIX") 
+        ? item["Incident Reported (In Remedy)"] 
+        : item["PROBLEM REPORTED in Resolution Comment"];
+    });
     populateDropdown(incidentOptions);
   })
   .catch(err => {
@@ -30,6 +35,27 @@ function populateDropdown(options) {
     dropdown.appendChild(optElement);
   });
 }
+// fetch('resolution.json')
+//   .then(response => response.json())
+//   .then(data => {
+//     originalData = data;
+//     incidentOptions = data.map(item => item["Incident Reported (In Remedy)"]);
+//     populateDropdown(incidentOptions);
+//   })
+//   .catch(err => {
+//     console.error('Error loading JSON:', err);
+//     dropdown.innerHTML = '<option value="" disabled>Error loading options</option>';
+//   });
+
+// function populateDropdown(options) {
+//   dropdown.innerHTML = '<option value="" disabled selected>Select an option</option>';
+//   options.forEach((option, index) => {
+//     const optElement = document.createElement('option');
+//     optElement.value = index;
+//     optElement.textContent = option;
+//     dropdown.appendChild(optElement);
+//   });
+// }
 function fetchRelatedInfo(selectedItem) {
   if (selectedItem) {
     const wic = prompt("Enter WIC:", "");
@@ -135,7 +161,6 @@ copyButton.addEventListener('click', () => {
     console.error('Error copying to clipboard:', err);
   });
 });
-
 injectButton.addEventListener('click', async () => {
   if (!combinedInfo) {
     alert('Please select an option and fill in details first!');
@@ -155,6 +180,14 @@ injectButton.addEventListener('click', async () => {
         const textarea = document.querySelector('textarea.text#arid_WIN_4_1000000156');
         if (textarea) {
           textarea.value = info;
+          
+          // Create input and change events
+          const inputEvent = new Event('input', { bubbles: true });
+          const changeEvent = new Event('change', { bubbles: true });
+
+          // Dispatch events to notify the application
+          textarea.dispatchEvent(inputEvent);
+          textarea.dispatchEvent(changeEvent);
         } else {
           alert('Textarea with ID "arid_WIN_4_1000000156" not found!');
         }
@@ -168,11 +201,43 @@ injectButton.addEventListener('click', async () => {
   }
 });
 
+// injectButton.addEventListener('click', async () => {
+//   if (!combinedInfo) {
+//     alert('Please select an option and fill in details first!');
+//     return;
+//   }
+
+//   try {
+//     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+//     if (!tab.url.includes("https://walgreens.onbmc.com")) {
+//       alert("Please navigate to the Walgreens page before using this feature.");
+//       return;
+//     }
+
+//     chrome.scripting.executeScript({
+//       target: { tabId: tab.id },
+//       func: (info) => {
+//         const textarea = document.querySelector('textarea.text#arid_WIN_4_1000000156');
+//         if (textarea) {
+//           textarea.value = info;
+//         } else {
+//           alert('Textarea with ID "arid_WIN_4_1000000156" not found!');
+//         }
+//       },
+//       args: [combinedInfo],
+//     });
+
+//     alert('Text injected into the textarea!');
+//   } catch (err) {
+//     console.error('Error injecting text:', err);
+//   }
+// });
+
 catButton.addEventListener('click', async () => {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab.url.includes("https://walgreens.onbmc.com")) {
-      alert("Please navigate to the Walgreens page before using this feature.");
+      alert("This feature is currently disabled, Kindly contact your admin");
       return;
     }
 
@@ -234,6 +299,17 @@ catButton.addEventListener('click', async () => {
     console.error('Error during categorization:', err);
   }
 });
+// function dropArea(){
+  const dropTglBtn = document.getElementById('update-btn');
+  const dropArea = document.getElementById('drop-area');
+
+  dropTglBtn.addEventListener('click', () => {
+    dropArea.classList.toggle('show');    
+  })
+// }
+function contact(){
+  alert('Contact your admin/developer');
+}
 // =====================
 // const dropdown = document.getElementById('dropdown');
 // const searchInput = document.getElementById('searchInput');
